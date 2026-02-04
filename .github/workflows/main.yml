@@ -16,18 +16,36 @@ jobs:
           distribution: temurin
           java-version: 17
 
+      # ✅ Cache para que no descargue todo cada vez
+      - name: Cache Gradle
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: gradle-${{ runner.os }}-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+
+      # ✅ Android SDK
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
+
+      # ✅ Instalar paquetes exactos para compileSdk 34
+      - name: Install Android SDK Packages
+        run: |
+          sdkmanager "platform-tools"
+          sdkmanager "platforms;android-34"
+          sdkmanager "build-tools;34.0.0"
 
       - name: Grant permission
         run: chmod +x gradlew
 
-      - name: Build with Gradle (save log)
-        run: ./gradlew assembleDebug --stacktrace --info > buildlog.txt 2>&1
+      # ✅ Build real (sin daemon para evitar freeze)
+      - name: Build APK
+        run: ./gradlew assembleDebug --no-daemon
 
-      - name: Upload Build Log
-        if: always()
+      # ✅ Subir APK
+      - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: gradle-build-log
-          path: buildlog.txt
+          name: app-debug
+          path: app/build/outputs/apk/debug/app-debug.apk
