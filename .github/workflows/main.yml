@@ -1,6 +1,7 @@
 name: Build APK
 
-on: [push]
+on:
+  push:
 
 jobs:
   build:
@@ -15,17 +16,11 @@ jobs:
           java-version: 17
           distribution: temurin
 
-      - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
+      - name: Grant permission
+        run: chmod +x gradlew
 
-      # ✅ NO aceptar licencias manualmente
-      # GitHub ya las trae aceptadas
-
-      - name: Create local.properties
-        run: echo "sdk.dir=$ANDROID_SDK_ROOT" > local.properties
-
-      - name: Build APK
-        run: ./gradlew assembleDebug --stacktrace --info
+      - name: Build Debug APK
+        run: ./gradlew assembleDebug --stacktrace --console=plain
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
