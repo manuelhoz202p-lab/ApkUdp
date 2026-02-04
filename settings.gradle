@@ -1,0 +1,2 @@
+rootProject.name = "Maulinet Z"
+include ':app'
