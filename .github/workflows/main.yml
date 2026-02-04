@@ -1,19 +1,35 @@
 name: Build APK
+
 on: [push, pull_request]
+
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v4
-      - name: set up JDK 17
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'temurin'
+
+      # ✅ IMPORTANTE: Instalar Android SDK
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      # ✅ IMPORTANTE: Aceptar licencias
+      - name: Accept Android licenses
+        run: yes | sdkmanager --licenses
+
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
+
       - name: Build with Gradle
         run: ./gradlew assembleDebug --stacktrace --info
+
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
