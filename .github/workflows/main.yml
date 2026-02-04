@@ -2,27 +2,49 @@ name: Build APK
 
 on:
   push:
+  pull_request:
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      # 1. Descargar el código del repo
+      - name: Checkout code
+        uses: actions/checkout@v4
 
+      # 2. Instalar Java 17
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
           java-version: 17
           distribution: temurin
 
-      - name: Grant permission
+      # 3. Dar permisos al wrapper
+      - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
-      - name: Build Debug APK
-        run: ./gradlew assembleDebug --stacktrace --console=plain
+      # 4. Compilar y guardar log completo
+      - name: Build APK (save full log)
+        run: |
+          ./gradlew assembleDebug --stacktrace --console=plain --no-daemon > full_log.txt 2>&1 || true
+          echo "=============================="
+          echo "ULTIMAS 200 LINEAS DEL ERROR:"
+          echo "=============================="
+          tail -n 200 full_log.txt
+          exit 1
 
+      # 5. Subir el log SIEMPRE (aunque falle)
+      - name: Upload full Gradle log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: gradle-full-log
+          path: full_log.txt
+
+      # 6. Subir el APK (solo si existe)
       - name: Upload APK
+        if: success()
         uses: actions/upload-artifact@v4
         with:
           name: debug-apk
