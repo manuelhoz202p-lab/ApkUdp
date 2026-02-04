@@ -24,6 +24,9 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
+        - name: Clean project
+          run: ./gradlew clean
+
       # 4. Compilar y guardar log completo
       - name: Build APK (save full log)
         run: |
