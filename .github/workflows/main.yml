@@ -1,10 +1,33 @@
-- name: Build with Gradle (save log)
-  run: |
-    ./gradlew assembleDebug --stacktrace --info > buildlog.txt 2>&1
+name: Build APK
 
-- name: Upload Build Log
-  if: always()
-  uses: actions/upload-artifact@v4
-  with:
-    name: gradle-build-log
-    path: buildlog.txt
+on: [push]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Grant permission
+        run: chmod +x gradlew
+
+      - name: Build with Gradle (save log)
+        run: ./gradlew assembleDebug --stacktrace --info > buildlog.txt 2>&1
+
+      - name: Upload Build Log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: gradle-build-log
+          path: buildlog.txt
