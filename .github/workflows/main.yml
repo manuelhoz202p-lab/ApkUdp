@@ -9,35 +9,36 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. Descargar el código del repo
+      # 1. Descargar el código
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # 2. Instalar Java 17
+      # 2. Configurar Java 17
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
           java-version: 17
           distribution: temurin
 
-      # 3. Dar permisos al wrapper
+      # 3. Dar permisos al gradlew
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
-        - name: Clean project
-          run: ./gradlew clean
+      # 4. Limpiar proyecto antes de compilar
+      - name: Clean project
+        run: ./gradlew clean
 
-      # 4. Compilar y guardar log completo
+      # 5. Compilar Debug APK y guardar log completo
       - name: Build APK (save full log)
         run: |
           ./gradlew assembleDebug --stacktrace --console=plain --no-daemon > full_log.txt 2>&1 || true
           echo "=============================="
-          echo "ULTIMAS 200 LINEAS DEL ERROR:"
+          echo "ULTIMAS 200 LINEAS DEL LOG:"
           echo "=============================="
           tail -n 200 full_log.txt
           exit 1
 
-      # 5. Subir el log SIEMPRE (aunque falle)
+      # 6. Subir log completo aunque falle
       - name: Upload full Gradle log
         if: always()
         uses: actions/upload-artifact@v4
@@ -45,7 +46,7 @@ jobs:
           name: gradle-full-log
           path: full_log.txt
 
-      # 6. Subir el APK (solo si existe)
+      # 7. Subir APK si se generó correctamente
       - name: Upload APK
         if: success()
         uses: actions/upload-artifact@v4
